@@ -1,61 +1,78 @@
 package com.crappyweather.app;
 
-import com.crappyweather.app.adapter.CrappyWeatherAdapter;
 import com.crappyweather.app.model.CrappyWeather;
 import com.crappyweather.app.network.NetworkClient;
 
-import android.app.ListFragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainFragment extends ListFragment {
+public class MainFragment extends Fragment {
 
-    private static final String[] QUERIES = new String[]{"Franklin, TN", "Conway, AR", "Atlanta, GA", "New York City, NY", "San Francisco, CA", "Anchorage, AK", "Paris, France"};
+    private static final String QUERY = "Nashville, TN";
+
+    private ProgressBar mProgressBar;
+
+    private TextView mWeatherTextView;
 
     public static MainFragment newInstance() {
         return new MainFragment();
     }
 
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_main, container);
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ShittyWeatherTask task = new ShittyWeatherTask();
-        task.execute(QUERIES);
+        mProgressBar = (ProgressBar) view.findViewById(R.id.progress);
+        mWeatherTextView = (TextView) view.findViewById(R.id.weather_TextView);
+
+        CrappyWeatherTask task = new CrappyWeatherTask();
+        task.execute(QUERY);
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        menu.add("Refresh").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                ShittyWeatherTask task = new ShittyWeatherTask();
-                task.execute(QUERIES);
-
-                return true;
-            }
-        });
+    private String getText(double temp) {
+        if (temp > 100) {
+            return "THAT'S FREAKING BLAZING";
+        } else if (temp > 85) {
+            return "THAT'S FREAKING HOT";
+        } else if (temp > 75) {
+            return "THAT'S FREAKING WARM";
+        } else if (temp > 65) {
+            return "THAT'S FREAKING TEMPERATE";
+        } else if (temp > 45) {
+            return "THAT'S FREAKING CHILLY";
+        } else if (temp > 32) {
+            return "THAT'S FREAKING COLD";
+        } else {
+            return "THAT'S FREAKING FREEZING";
+        }
     }
 
-    class ShittyWeatherTask extends AsyncTask<String, Void, List<CrappyWeather>> {
+    private double convert(double kelvin) {
+        double celsius = kelvin - 273;
+        return celsius * 1.8 + 32;
+    }
+
+    class CrappyWeatherTask extends AsyncTask<String, Void, List<CrappyWeather>> {
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            setListShown(false);
+            mProgressBar.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -72,8 +89,9 @@ public class MainFragment extends ListFragment {
         @Override
         protected void onPostExecute(List<CrappyWeather> crappyWeathers) {
             super.onPostExecute(crappyWeathers);
-            setListAdapter(new CrappyWeatherAdapter(crappyWeathers));
-            setListShown(true);
+            CrappyWeather weather = crappyWeathers.get(0);
+            double temp = convert(weather.getMain().getTemp());
+            mWeatherTextView.setText(getString(R.string.weather, temp, weather.getName(), getText(temp)));
         }
     }
 
