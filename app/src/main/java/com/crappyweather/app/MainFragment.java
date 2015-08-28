@@ -32,7 +32,7 @@ public class MainFragment extends ListFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ShittyWeatherTask task = new ShittyWeatherTask();
+        CrappyWeatherTask task = new CrappyWeatherTask();
         task.execute(QUERIES);
     }
 
@@ -42,7 +42,7 @@ public class MainFragment extends ListFragment {
         menu.add("Refresh").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                ShittyWeatherTask task = new ShittyWeatherTask();
+                CrappyWeatherTask task = new CrappyWeatherTask();
                 task.execute(QUERIES);
 
                 return true;
@@ -50,7 +50,7 @@ public class MainFragment extends ListFragment {
         });
     }
 
-    class ShittyWeatherTask extends AsyncTask<String, Void, List<CrappyWeather>> {
+    class CrappyWeatherTask extends AsyncTask<String, Void, List<CrappyWeather>> {
 
         @Override
         protected void onPreExecute() {
@@ -62,7 +62,7 @@ public class MainFragment extends ListFragment {
         protected List<CrappyWeather> doInBackground(String... params) {
             List<CrappyWeather> weathers = new ArrayList<CrappyWeather>();
             for (String query : params) {
-                CrappyWeather weather = NetworkClient.getInstance().getShittyWeather(query);
+                CrappyWeather weather = NetworkClient.getInstance().getCrappyWeather(query);
                 weathers.add(weather);
             }
 

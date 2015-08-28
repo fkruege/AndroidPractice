@@ -8,5 +8,5 @@ import retrofit.http.Query;
 public interface NetworkInterface {
 
     @GET("/data/2.5/weather")
-    CrappyWeather getShittyWeather(@Query("q") String location);
+    CrappyWeather getCrappyWeather(@Query("q") String location);
 }
