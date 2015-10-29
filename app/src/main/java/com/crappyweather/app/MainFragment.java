@@ -79,7 +79,7 @@ public class MainFragment extends Fragment {
         protected List<CrappyWeather> doInBackground(String... params) {
             List<CrappyWeather> weathers = new ArrayList<CrappyWeather>();
             for (String query : params) {
-                CrappyWeather weather = NetworkClient.getInstance().getShittyWeather(query);
+                CrappyWeather weather = NetworkClient.getInstance().getCrappyWeather(query);
                 weathers.add(weather);
             }
 

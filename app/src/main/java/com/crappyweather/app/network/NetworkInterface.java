@@ -8,5 +8,5 @@ import retrofit.http.Query;
 public interface NetworkInterface {
 
     @GET("/data/2.5/weather?APPID=c80d8eabf7e092d62caf82ba370c7473")
-    CrappyWeather getShittyWeather(@Query("q") String location);
+    CrappyWeather getCrappyWeather(@Query("q") String location);
 }

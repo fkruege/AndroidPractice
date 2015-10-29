@@ -20,8 +20,8 @@ public class NetworkClient {
         return sInstance;
     }
 
-    public CrappyWeather getShittyWeather(String location) {
-        return getNetworkInterface().getShittyWeather(location);
+    public CrappyWeather getCrappyWeather(String location) {
+        return getNetworkInterface().getCrappyWeather(location);
     }
 
     private NetworkInterface getNetworkInterface() {
