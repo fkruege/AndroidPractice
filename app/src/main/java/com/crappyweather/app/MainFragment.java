@@ -1,9 +1,5 @@
 package com.crappyweather.app;
 
-import com.crappyweather.app.model.CrappyWeather;
-import com.crappyweather.app.network.NetworkClient;
-
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,16 +8,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.crappyweather.app.network.NetworkClient;
+
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class MainFragment extends Fragment {
 
     private static final String QUERY = "Nashville, TN";
 
     private ProgressBar mProgressBar;
-
     private TextView mWeatherTextView;
 
     public static MainFragment newInstance() {
@@ -40,8 +38,18 @@ public class MainFragment extends Fragment {
         mProgressBar = (ProgressBar) view.findViewById(R.id.progress);
         mWeatherTextView = (TextView) view.findViewById(R.id.weather_TextView);
 
-        CrappyWeatherTask task = new CrappyWeatherTask();
-        task.execute(QUERY);
+        NetworkClient.getInstance().getCrappyWeather(QUERY)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe(() -> mProgressBar.setVisibility(View.VISIBLE))
+                .doOnTerminate(() -> mProgressBar.setVisibility(View.GONE))
+                .subscribe(
+                        weather -> {
+                            double temp = convert(weather.getMain().getTemp());
+                            mWeatherTextView.setText(getString(R.string.weather, temp, weather.getName(), getText(temp)));
+                        },
+                        t -> Toast.makeText(getActivity(), "Error retrieving weather", Toast.LENGTH_LONG).show()
+                );
     }
 
     private String getText(double temp) {
@@ -66,33 +74,4 @@ public class MainFragment extends Fragment {
         double celsius = kelvin - 273;
         return celsius * 1.8 + 32;
     }
-
-    class CrappyWeatherTask extends AsyncTask<String, Void, List<CrappyWeather>> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mProgressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected List<CrappyWeather> doInBackground(String... params) {
-            List<CrappyWeather> weathers = new ArrayList<CrappyWeather>();
-            for (String query : params) {
-                CrappyWeather weather = NetworkClient.getInstance().getCrappyWeather(query);
-                weathers.add(weather);
-            }
-
-            return weathers;
-        }
-
-        @Override
-        protected void onPostExecute(List<CrappyWeather> crappyWeathers) {
-            super.onPostExecute(crappyWeathers);
-            CrappyWeather weather = crappyWeathers.get(0);
-            double temp = convert(weather.getMain().getTemp());
-            mWeatherTextView.setText(getString(R.string.weather, temp, weather.getName(), getText(temp)));
-        }
-    }
-
 }
