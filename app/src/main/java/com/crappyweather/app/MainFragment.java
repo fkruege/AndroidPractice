@@ -40,8 +40,7 @@ public class MainFragment extends Fragment {
         mProgressBar = (ProgressBar) view.findViewById(R.id.progress);
         mWeatherTextView = (TextView) view.findViewById(R.id.weather_TextView);
 
-        CrappyWeatherTask task = new CrappyWeatherTask();
-        task.execute(QUERY);
+        loadWeather(QUERY);
     }
 
     private String getText(double temp) {
@@ -67,32 +66,12 @@ public class MainFragment extends Fragment {
         return celsius * 1.8 + 32;
     }
 
-    class CrappyWeatherTask extends AsyncTask<String, Void, List<CrappyWeather>> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mProgressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected List<CrappyWeather> doInBackground(String... params) {
-            List<CrappyWeather> weathers = new ArrayList<CrappyWeather>();
-            for (String query : params) {
-                CrappyWeather weather = NetworkClient.getInstance().getCrappyWeather(query);
-                weathers.add(weather);
-            }
-
-            return weathers;
-        }
-
-        @Override
-        protected void onPostExecute(List<CrappyWeather> crappyWeathers) {
-            super.onPostExecute(crappyWeathers);
-            CrappyWeather weather = crappyWeathers.get(0);
-            double temp = convert(weather.getMain().getTemp());
-            mWeatherTextView.setText(getString(R.string.weather, temp, weather.getName(), getText(temp)));
-        }
+    private void loadWeather(String query) {
+        mProgressBar.setVisibility(View.VISIBLE);
+        List<CrappyWeather> weathers = new ArrayList<CrappyWeather>();
+        CrappyWeather weather = NetworkClient.getInstance().getCrappyWeather(query);
+        double temp = convert(weather.getMain().getTemp());
+        mWeatherTextView.setText(getString(R.string.weather, temp, weather.getName(), getText(temp)));
     }
 
 }
