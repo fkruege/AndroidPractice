@@ -3,7 +3,6 @@ package com.crappyweather.app;
 import com.crappyweather.app.model.CrappyWeather;
 import com.crappyweather.app.network.NetworkClient;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,9 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainFragment extends Fragment {
 
@@ -68,7 +64,6 @@ public class MainFragment extends Fragment {
 
     private void loadWeather(String query) {
         mProgressBar.setVisibility(View.VISIBLE);
-        List<CrappyWeather> weathers = new ArrayList<CrappyWeather>();
         CrappyWeather weather = NetworkClient.getInstance().getCrappyWeather(query);
         double temp = convert(weather.getMain().getTemp());
         mWeatherTextView.setText(getString(R.string.weather, temp, weather.getName(), getText(temp)));
