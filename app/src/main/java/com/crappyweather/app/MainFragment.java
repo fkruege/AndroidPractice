@@ -14,6 +14,9 @@ import android.widget.TextView;
 
 public class MainFragment extends Fragment {
 
+    private static final String[] QUERIES = new String[] { "Franklin, TN", "Conway, AR",
+            "Atlanta, GA", "New York City, NY", "San Francisco, CA", "Anchorage, AK",
+            "Paris, France" };
     private static final String QUERY = "Nashville, TN";
 
     private ProgressBar mProgressBar;
