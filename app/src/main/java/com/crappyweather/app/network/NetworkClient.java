@@ -3,6 +3,7 @@ package com.crappyweather.app.network;
 import com.crappyweather.app.model.CrappyWeather;
 
 import retrofit.RestAdapter;
+import retrofit.android.AndroidLog;
 
 public class NetworkClient {
 
@@ -24,11 +25,21 @@ public class NetworkClient {
         return getNetworkInterface().getCrappyWeather(location);
     }
 
-    private NetworkInterface getNetworkInterface() {
-        RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("http://api.openweathermap.org")
-                .build();
+    public CrappyWeatherNetworkInterface getCrappyWeatherNetworkInterface() {
+        return getNetworkInterface();
+    }
 
-        return restAdapter.create(NetworkInterface.class);
+
+
+    private CrappyWeatherNetworkInterface getNetworkInterface() {
+        RestAdapter restAdapter = getRestAdapter();
+        return restAdapter.create(CrappyWeatherNetworkInterface.class);
+    }
+
+    private RestAdapter getRestAdapter() {
+        return new RestAdapter.Builder()
+                    .setEndpoint("http://api.openweathermap.org")
+                    .setLogLevel(RestAdapter.LogLevel.FULL).setLog(new AndroidLog("RETROFIT"))
+                    .build();
     }
 }
