@@ -2,9 +2,9 @@ package com.crappyweather.app.model;
 
 public class CrappyWeather {
 
-    String name;
+    public String name;
 
-    Main main;
+    public Main main;
 
     public Main getMain() {
         return main;

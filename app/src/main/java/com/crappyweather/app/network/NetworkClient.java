@@ -7,6 +7,7 @@ import retrofit.android.AndroidLog;
 
 public class NetworkClient {
 
+    public static final String HTTP_API_OPENWEATHERMAP_ORG = "http://api.openweathermap.org";
     private static NetworkClient sInstance;
 
     private NetworkClient() {
@@ -38,7 +39,7 @@ public class NetworkClient {
 
     private RestAdapter getRestAdapter() {
         return new RestAdapter.Builder()
-                    .setEndpoint("http://api.openweathermap.org")
+                    .setEndpoint(HTTP_API_OPENWEATHERMAP_ORG)
                     .setLogLevel(RestAdapter.LogLevel.FULL).setLog(new AndroidLog("RETROFIT"))
                     .build();
     }

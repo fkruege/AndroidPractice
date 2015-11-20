@@ -1,32 +1,30 @@
 package com.crappyweather.app.Views.Main;
 
-import com.crappyweather.app.Application.MyApplication;
-import com.crappyweather.app.R;
-import com.crappyweather.app.RxSupport.RxUtils;
-import com.crappyweather.app.adapter.CrappyWeatherAdapter;
-import com.crappyweather.app.injection.ActivityModule;
-import com.crappyweather.app.injection.DaggerFragmentComponent;
-import com.crappyweather.app.injection.FragmentModule;
-import com.crappyweather.app.model.CrappyWeather;
-import com.crappyweather.app.network.NetworkClient;
-
-import android.app.ListFragment;
-import android.os.AsyncTask;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.crappyweather.app.Application.MyApplication;
+import com.crappyweather.app.R;
+import com.crappyweather.app.RxSupport.RxUtils;
+import com.crappyweather.app.injection.ActivityModule;
+import com.crappyweather.app.injection.DaggerFragmentComponent;
+import com.crappyweather.app.injection.FragmentModule;
+import com.crappyweather.app.model.CrappyWeather;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,10 +39,10 @@ import rx.Subscriber;
 import rx.functions.Action0;
 import rx.subscriptions.CompositeSubscription;
 
-public class ListWeatherFragment extends Fragment implements ListWeatherWorkerFragment.MasterFragment {
+public class ListWeatherFragment extends Fragment implements ListWeatherWorkerFragment.MasterFragment, ItemClickListener {
 
     private static final String[] QUERIES = new String[]{"Franklin, TN", "Conway, AR", "Atlanta, GA", "New York City, NY", "San Francisco, CA", "Anchorage, AK", "Paris, France"};
-//    private static final String[] QUERIES = new String[]{"Franklin, TN"};
+//    private static final String[] QUERIES = new String[]{"Franklin, TN", "Conway, AR"};
 
 
     private CompositeSubscription _subscriptions = new CompositeSubscription();
@@ -109,8 +107,12 @@ public class ListWeatherFragment extends Fragment implements ListWeatherWorkerFr
         menu.add("Refresh").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-//                CrappyWeatherTask task = new CrappyWeatherTask();
-//                task.execute(QUERIES);
+                _subscriber.unsubscribe();
+                int saveSize = _WeatherList.size();
+
+                _WeatherList.clear();
+                _WeatherAdapter.notifyItemRangeRemoved(0, saveSize);
+                getWeather(true);
 
                 return true;
             }
@@ -159,12 +161,12 @@ public class ListWeatherFragment extends Fragment implements ListWeatherWorkerFr
 
     private void setupWeatherAdapterAndList() {
         _WeatherList = new ArrayList<>();
-        _WeatherAdapter = new WeatherAdapter(_WeatherList);
+        _WeatherAdapter = new WeatherAdapter(_WeatherList, this);
     }
 
-    private void getWeather() {
+    private void getWeather(boolean forceRefresh) {
         ListWeatherWorkerFragment workerFragment = getWorkerFragment();
-        workerFragment.getWeather(QUERIES);
+        workerFragment.getWeather(forceRefresh, QUERIES);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -172,9 +174,10 @@ public class ListWeatherFragment extends Fragment implements ListWeatherWorkerFr
     //////////////////////////////////////////////////////////////////////////
 
     @Override
-    public void setStream(Observable<CrappyWeather> weatherStream) {
+    public void setStream(Observable<CrappyWeather> weatherStream, boolean forceRefresh) {
 
-        if (_subscriber == null) {
+        if (_subscriber == null || forceRefresh) {
+
             _subscriber = new WeatherSubscriber();
 
             _subscriptions
@@ -187,12 +190,28 @@ public class ListWeatherFragment extends Fragment implements ListWeatherWorkerFr
         }
 
 
-
     }
 
     @Override
     public void ready() {
-        getWeather();
+        getWeather(false);
+
+    }
+
+    /////////////////////////////////////////////////////////////////////////
+    // Begin: ItemClickListener
+    /////////////////////////////////////////////////////////////////////////
+    @Override
+    public void onItemClick(View v, Object itemClicked) {
+
+        CrappyWeather weather = (CrappyWeather) itemClicked;
+
+        Snackbar.make(
+                getActivity().findViewById(android.R.id.content),
+                weather.getName(),
+                Snackbar.LENGTH_LONG)
+                .setActionTextColor(Color.RED)
+                .show();
 
     }
 
@@ -206,21 +225,18 @@ public class ListWeatherFragment extends Fragment implements ListWeatherWorkerFr
 
         @Override
         public void onCompleted() {
-
-
-
+            Log.d(this.getClass().getName(), "onCompleted");
         }
 
         @Override
         public void onError(Throwable e) {
-
+            Log.d(this.getClass().getName(), e.getMessage());
         }
 
         @Override
         public void onNext(CrappyWeather weather) {
             _WeatherList.add(weather);
             _WeatherAdapter.notifyItemInserted(_WeatherList.size() - 1);
-
         }
     }
 
